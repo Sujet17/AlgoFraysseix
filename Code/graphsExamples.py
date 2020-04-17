@@ -92,7 +92,7 @@ def load_graph3():
     graph.add_edge(0, 2)
     graph.add_edge(0, 3)
     graph.add_edge(0, 5)
-    graph.add_edge(0, 4)
+    # graph.add_edge(0, 4)
     graph.add_edge(0, 1)
 
     graph.add_edge(1, 0)
@@ -110,7 +110,7 @@ def load_graph3():
     graph.add_edge(3, 0)
 
     graph.add_edge(4, 1)
-    graph.add_edge(4, 0)
+    # graph.add_edge(4, 0)
     graph.add_edge(4, 5)
     graph.add_edge(4, 3)
     graph.add_edge(4, 2)
@@ -147,7 +147,7 @@ def load_graph4():
     graph.add_edge(2, 0)
 
     graph.add_edge(3, 12)
-    graph.add_edge(3, 11)
+    # graph.add_edge(3, 11)
     graph.add_edge(3, 10)
     graph.add_edge(3, 4)
     graph.add_edge(3, 1)
@@ -176,7 +176,7 @@ def load_graph4():
     graph.add_edge(7, 6)
 
     graph.add_edge(8, 14)
-    graph.add_edge(8, 9)
+    # graph.add_edge(8, 9)
     graph.add_edge(8, 7)
     graph.add_edge(8, 0)
 
@@ -184,7 +184,7 @@ def load_graph4():
     graph.add_edge(9, 2)
     graph.add_edge(9, 6)
     graph.add_edge(9, 7)
-    graph.add_edge(9, 8)
+    # graph.add_edge(9, 8)
     graph.add_edge(9, 14)
     graph.add_edge(9, 12)
 
@@ -195,7 +195,7 @@ def load_graph4():
     graph.add_edge(10, 13)
 
     graph.add_edge(11, 10)
-    graph.add_edge(11, 3)
+    # graph.add_edge(11, 3)
     graph.add_edge(11, 12)
     graph.add_edge(11, 13)
 
@@ -203,6 +203,7 @@ def load_graph4():
     graph.add_edge(12, 3)
     graph.add_edge(12, 9)
     graph.add_edge(12, 14)
+    graph.add_edge(12, 15)
     graph.add_edge(12, 13)
 
     graph.add_edge(13, 12)
@@ -223,5 +224,20 @@ def load_graph4():
     graph.add_edge(15, 12)
     graph.add_edge(15, 14)
     graph.add_edge(15, 0)
+
+    return graph
+
+
+def load_graph5() -> EmbeddedGraph:
+    graph = EmbeddedGraph(4)
+
+    graph.add_edge(0, 3)
+    graph.add_edge(0, 1)
+    graph.add_edge(1, 0)
+    graph.add_edge(1, 2)
+    graph.add_edge(2, 1)
+    graph.add_edge(2, 3)
+    graph.add_edge(3, 2)
+    graph.add_edge(3, 0)
 
     return graph

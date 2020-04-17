@@ -8,51 +8,48 @@ class EmbeddedGraph(Graph):
             self.embed(g)
         else:
             Graph.__init__(self, g)
+        self.dummy_edges = {}
 
     def add_edge(self, u, v):
+        """
+        Add v to the neighbors of u, at the end of the existing list of neighbors
+        :param u:
+        :param v:
+        :return:
+        """
         self.edgesCnt += 1
         self.edges[u].append(v)
 
-    def embed(self, g):
-        pass
-
-    """
-    def neighbors_between2(self, u, b1, b2):
-        
+    def add_dummy_edge(self, u: int, v: int, v_successor: int, u_successor: int):
+        """
 
         :param u:
-        :param b1:
-        :param b2:
-        :return: The neighbors of u that are between b1 and b2 (both included)
-       
-        neighbors = self.neighbors(u)
-        s = neighbors.index(b1)
-        t = (neighbors.index(b2) + 1) % len(neighbors)
-
-        if s < t:
-            return neighbors[s:t]
-        else:
-            return neighbors[s:] + neighbors[:t]
-    
-    def neighbors_between(self, u, b1, b2, excluded_v):
-        neighbors = self.neighbors(u)
-        print(u, " : ",neighbors)
-        s = neighbors.index(b1)
-        t = (neighbors.index(b2) + 1) % len(neighbors)
-
-        if s < t:
-            if excluded_v in neighbors[s:t]:
-                res = neighbors[t:] + neighbors[:s]
-                res.reverse()
-                return res
+        :param v:
+        :param v_successor: The vertex that follows v in the list of neighbors of u
+        :param u_successor: The vertex that follows u in the list of neighbors of v
+        :return:
+        """
+        if v not in self.edges[u]:
+            print('dummy edge added', u, '<->', v)
+            self.add_neighbor_after(u, v, v_successor)
+            self.add_neighbor_after(v, u, u_successor)
+            if u < v:
+                self.dummy_edges[(u, v)] = True
             else:
-                return neighbors[s:t]
+                self.dummy_edges[(v, u)] = True
 
-        else:
-            if excluded_v in neighbors[s:] + neighbors[:t]:
-                res = neighbors[t:s]
-                res.reverse()
-                return res
-            else:
-                return neighbors[s:] + neighbors[:t]
-    """
+    def add_neighbor_after(self, u, v, v_successor):
+        neighbors = self.neighbors(u)
+        for i in range(len(neighbors)):
+            n = neighbors[i]
+            if n == v_successor:
+                neighbors.insert(i, v)
+                break
+
+    def is_dummy_edge(self, u: int, v: int):
+        if u < v:
+            return self.dummy_edges.get((u, v), False)
+        return self.dummy_edges.get((v, u), False)
+
+    def embed(self, g):
+        pass

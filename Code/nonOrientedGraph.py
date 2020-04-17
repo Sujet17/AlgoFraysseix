@@ -15,3 +15,15 @@ class Graph:
         
     def neighbors(self, v):
         return self.edges[v]
+
+    def degree(self, v):
+        return len(self.edges[v])
+
+    def sum_degrees(self):
+        return sum([self.degree(i) for i in range(self.size)])
+
+    def __str__(self):
+        result = ""
+        for i in range(self.size):
+            result += str(self.edges[i]) + "\n"
+        return result

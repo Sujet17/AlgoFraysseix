@@ -5,6 +5,7 @@ from nonOrientedGraph import *
 from canonicalOrdering import *
 from graphsExamples import *
 from shilftAlgorithm import ShiftAlgorithm
+from canonicalTriangulate import CanonicalTriangulation
 from planarityTest import DFS
 N = 20
 CELL_SIZE = 30
@@ -19,20 +20,24 @@ class App:
 
         button = Button(self.window, text="Change graph", command=self.change_graph)
         button.pack()
-        self.bool = TRUE
+        self.bool = False
         self.change_graph()
 
     def change_graph(self):
         if self.bool:
             g = load_graph4()
-            external_face = (0, 1, 15)
+            # external_face = (0, 1, 15)
             self.bool = False
         else:
-            g = load_graph3()
-            external_face = (0, 1, 2)
+            g = load_graph5()
+            # external_face = (0, 1, 2)
             self.bool = True
 
-        ordering = get_canonical_ordering(g, external_face)
+        # ordering = get_canonical_ordering(g, external_face)
+        ct = CanonicalTriangulation(g)
+        ct.canonical_triangulate()
+        ordering = ct.canonical_order
+        print(ordering)
         algo = ShiftAlgorithm(g, ordering)
         xpos, ypos = algo.run()
         self.grid.draw_graph(g, xpos, ypos)
@@ -71,10 +76,10 @@ class GridCanvas(Canvas):
         # self.create_oval(x_window, y_window, x_window, y_window, width=0, fill='red')
         self.create_line(x_window, y_window, x_window + 1, y_window)
 
-    def draw_edge(self, x1, y1, x2, y2):
+    def draw_edge(self, x1, y1, x2, y2, color):
         x1_window, y1_window = self.to_grid_coordinates(x1, y1)
         x2_window, y2_window = self.to_grid_coordinates(x2, y2)
-        self.create_line(x1_window, y1_window, x2_window, y2_window, fill='red')
+        self.create_line(x1_window, y1_window, x2_window, y2_window, fill=color)
 
     def to_grid_coordinates(self, x, y):
         return (x + 1) * self.cell_size, (self.height - (y + 1)) * self.cell_size
@@ -90,7 +95,10 @@ class GridCanvas(Canvas):
             self.add_text(str(i), x_coord[i], y_coord[i])
             for n in g.neighbors(i):
                 if n > i:
-                    self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n])
+                    if g.is_dummy_edge(i, n):
+                        self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n], 'green')
+                    else:
+                        self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n], 'red')
 
 
 if __name__ == "__main__":
