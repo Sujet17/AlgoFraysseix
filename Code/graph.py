@@ -46,13 +46,3 @@ def embed_graph_list(graph_list: List[nx.Graph]) -> List[nx.PlanarEmbedding]:
         if planar:
             result.append(embedding)
     return result
-
-
-def dict_pos_to_coord_list(positions: dict) -> Tuple[List[int], List[int]]:
-    x_positions = [None] * len(positions)
-    y_positions = [None] * len(positions)
-    for v in positions:
-        x, y = positions[v]
-        x_positions[v] = x
-        y_positions[v] = y
-    return x_positions, y_positions

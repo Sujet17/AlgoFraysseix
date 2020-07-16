@@ -11,7 +11,6 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
     :return: An ordering on the vertices that is canonical
     """
     v1, v2, vn = external_face
-
     # For each vertex v:
     # - chords[v] is the number of incident chords to v.
     # - out[v] is True iff v is on the outer boundary of the subgraph of g induced by the
@@ -21,11 +20,14 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
     out = [False] * len(g)
     mark = [False] * len(g)
 
-    available_vertices = []  # Not implemented yet, a list to store the possible candidates
+    available_vertices = set([vn])
 
     out[v1] = True
     out[v2] = True
     out[vn] = True
+
+    chords[v1] = 1
+    chords[v2] = 1
 
     ordering = [None] * len(g)
     ordering[0] = v1, []
@@ -33,7 +35,7 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
 
     for k in range(len(g), 2, -1):
 
-        x = pick_available_vertex(g, mark, out, chords, v1, v2)
+        x = available_vertices.pop()
         mark[x] = True
 
         if k == len(g):
@@ -41,46 +43,33 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
         else:
             wpq = find_wpq(g, x, out, mark)
 
-        # print("x : ", x, " ; wpq: ", wpq)
-        # assert len(wpq) >= 2  # Not necessary, used while implementation
-
         if len(wpq) == 2:
             for w in wpq:
-                out[w] = True
                 chords[w] -= 1
+                if chords[w] == 0:
+                    available_vertices.add(w)
         else:
-            for i in range(len(wpq)):
-                w = wpq[i]
-                out[w] = True
-
+            new_face_nodes = set(wpq[1:-1])
+            for i, w in enumerate(wpq):
                 if 0 < i < len(wpq) - 1:
+                    available_vertex = True
+                    out[w] = True
                     neighbors = g.neighbors(w)
                     for n in neighbors:
                         if not mark[n] and out[n] and n != wpq[i - 1] and n != wpq[i + 1]:
+                            # (w, n) is a chord
                             chords[w] += 1
-                            if n not in wpq[1:-1]:
+                            available_vertex = False
+                            if n not in new_face_nodes:
                                 chords[n] += 1
-
+                                available_vertices.discard(n)
+                    if available_vertex:
+                        available_vertices.add(w)
         ordering[k-1] = x, wpq
-
     return ordering
 
 
-def pick_available_vertex(g, mark, out, chords, v1, v2):
-    # print("out : ", out)
-    # print("mark : ", mark)
-    # print("chords: ", chords)
-    for i in range(len(g)):
-        if is_available_vertex(i, mark, out, chords, v1, v2):
-            return i
-    raise Exception('not available vertex')
-
-
-def is_available_vertex(x, mark, out, chords, v1, v2):
-    return not mark[x] and out[x] and chords[x] == 0 and x != v1 and x != v2
-
-
-def find_wpq(g: nx.PlanarEmbedding, v: int, out: list, mark: list, wq=None):
+def find_wpq(g: nx.PlanarEmbedding, v: int, out: list, mark: list, wq: int = None):
     """
     Find the list of the neighbors of x that are not marked yet. They appear consecutively on the external cycle.
 
@@ -111,7 +100,8 @@ def find_wpq(g: nx.PlanarEmbedding, v: int, out: list, mark: list, wq=None):
                 out_neighbors_indices.append(i)
 
     wq_index = out_wpq_indices[1]
-    if wq is not None:  # If wq is specified in the arguments
+    if wq is not None:
+        # If wq is specified in the arguments.
         if wq == neighbors[out_neighbors_indices[0]]:
             wq_index = out_wpq_indices[0]
     else:

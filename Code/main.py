@@ -2,7 +2,7 @@ from tkinter import *
 from graph import load_graph_list, embed_graph_list
 import networkx as nx
 from canonical_ordering import get_canonical_ordering
-from shilft_algorithm import ShiftAlgorithm
+from shilft_algorithm import shift_algorithm
 from triangulation import triangulate_embedding
 
 PAD = 10
@@ -33,13 +33,15 @@ class App:
 
     def change_graph(self):
         self.current_graph_index += 1
+        if self.current_graph_index >= len(self.graph_list):
+            self.current_graph_index = 0
         embedding = self.graph_list[self.current_graph_index]
 
         embedding_t, external_face = triangulate_embedding(embedding)
         ordering = get_canonical_ordering(embedding_t, external_face)
-        shift_algorithm = ShiftAlgorithm(embedding_t, ordering)
+        x_pos, y_pos = shift_algorithm(ordering)
 
-        x_pos, y_pos = shift_algorithm.run()
+        # x_pos, y_pos = shift_algorithm.run()
 
         self.grid.draw_graph(embedding, x_pos, y_pos)
         # self.grid.draw_graph(embedding_t, x_pos, y_pos)

@@ -1,69 +1,75 @@
-import networkx as nx
+from typing import Tuple, List
 
 
-class ShiftAlgorithm:
-    def __init__(self, embedding: nx.PlanarEmbedding, ordering: list):
-        self.embedding = embedding
-        self.ordering = ordering
-        self.v1, self.v2, self.v3 = [c[0] for c in ordering[:3]]
+def shift_algorithm(ordering: List[Tuple[int, list]]) -> Tuple[list, list]:
+    v1, v2, v3 = [c[0] for c in ordering[:3]]
+    left = ['N'] * len(ordering)
+    right = ['N'] * len(ordering)
+    offset = [None] * len(ordering)
+    y = [None] * len(ordering)
 
-        self.left = ['N'] * len(embedding)
-        self.right = ['N'] * len(embedding)
-        self.offset = [None] * len(embedding)
-        self.y = [None] * len(embedding)
+    offset[v1] = 0
+    y[v1] = 0
+    right[v1] = v3
+    left[v1] = None
+    offset[v3] = 1
+    y[v3] = 1
+    right[v3] = v2
+    left[v3] = None
+    offset[v2] = 1
+    y[v2] = 0
+    right[v2] = None
+    left[v2] = None
 
-        self.offset[self.v1] = 0
-        self.y[self.v1] = 0
-        self.right[self.v1] = self.v3
-        self.left[self.v1] = None
-        self.offset[self.v3] = 1
-        self.y[self.v3] = 1
-        self.right[self.v3] = self.v2
-        self.left[self.v3] = None
-        self.offset[self.v2] = 1
-        self.y[self.v2] = 0
-        self.right[self.v2] = None
-        self.left[self.v2] = None
+    phase1(ordering, left, right, offset, y)
+    accumulate_offset(v1, 0, left, right, offset)
+    return offset, y
 
-    def run(self):
-        self.phase1()
-        # print(self.left)
-        # print(self.right)
-        self.accumulate_offset(self.v1, 0)
-        return self.offset, self.y
 
-    def phase1(self):
-        for k in range(3, len(self.embedding)):
-            # wi = get_outer_cycle(g)
-            wi = []
-            vk, neighbors_wi = self.ordering[k]
-            # neighbors_wi = self.find_neighbors_wi(vk)
-            # print(k, vk, self.left, '\n', self.right, '\n', 'neighbors :', neighbors_wi, sep=' ; ')
-            wp = neighbors_wi[0]
-            wq = neighbors_wi[-1]
-            self.offset[neighbors_wi[1]] += 1
-            self.offset[wq] += 1
-            offset = sum([self.offset[i] for i in neighbors_wi[1:]])
-            self.offset[vk] = 0.5 * (offset - self.y[wp] + self.y[wq])
-            self.y[vk] = 0.5 * (offset + self.y[wp] + self.y[wq])
-            self.offset[wq] = offset - self.offset[vk]
+def phase1(ordering: List[Tuple[int, list]], left: list, right: list, offset: list, y: list):
+    """
 
-            if len(neighbors_wi) > 2:
-                self.offset[neighbors_wi[1]] -= self.offset[vk]
-            self.right[wp] = vk
-            self.right[vk] = wq
+    :param ordering:
+    :param left:
+    :param right:
+    :param offset:
+    :param y:
+    :return:
+    """
+    for k in range(3, len(ordering)):
+        vk, neighbors_wi = ordering[k]
+        wp = neighbors_wi[0]
+        wq = neighbors_wi[-1]
+        offset[neighbors_wi[1]] += 1
+        offset[wq] += 1
+        local_offset = sum([offset[i] for i in neighbors_wi[1:]])
+        offset[vk] = 0.5 * (local_offset - y[wp] + y[wq])
+        y[vk] = 0.5 * (local_offset + y[wp] + y[wq])
+        offset[wq] = local_offset - offset[vk]
 
-            if len(neighbors_wi) > 2:
-                self.left[vk] = neighbors_wi[1]
-                self.right[neighbors_wi[-2]] = None
-            else:
-                self.left[vk] = None
+        if len(neighbors_wi) > 2:
+            offset[neighbors_wi[1]] -= offset[vk]
+        right[wp] = vk
+        right[vk] = wq
 
-    def accumulate_offset(self, v, delta):
-        if v is not None:
-            self.offset[v] += delta
-            self.accumulate_offset(self.left[v], self.offset[v])
-            self.accumulate_offset(self.right[v], self.offset[v])
+        if len(neighbors_wi) > 2:
+            left[vk] = neighbors_wi[1]
+            right[neighbors_wi[-2]] = None
+        else:
+            left[vk] = None
 
-    def placed(self, v):
-        return self.right[v] != 'N'
+
+def accumulate_offset(v: int, delta: int, left: list, right: list, offset: list):
+    """Compute the absolute x-coordinates of the vertices through a traversal of the tree.
+
+    :param v:
+    :param left:
+    :param right:
+    :param offset:
+    :param delta:
+    :return:
+    """
+    if v is not None:
+        offset[v] += delta
+        accumulate_offset(left[v], offset[v], left, right, offset)
+        accumulate_offset(right[v], offset[v], left, right, offset)
