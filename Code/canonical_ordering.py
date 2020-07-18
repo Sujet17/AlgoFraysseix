@@ -3,12 +3,12 @@ from typing import List, Tuple
 
 
 def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[Tuple[int, list]]:
-    """Returns a canonical ordering of the nodes
+    """Returns a canonical ordering of the nodes of the graph.
 
-    :param g: A triangulated graph coming with a planar embedding
+    :param g: A triangulated graph coming with a planar embedding.
     :param external_face: A tuple (v1, v2, v3) where v1, v2 and v3 are the vertices
-        appearing on the outer boundary of the graph in the counterclockwise order
-    :return: An ordering on the vertices that is canonical
+        appearing on the outer boundary of the graph in the counterclockwise order.
+    :return: An ordering on the vertices that is canonical.
     """
     v1, v2, vn = external_face
     # For each vertex v:
@@ -30,8 +30,11 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
     chords[v2] = 1
 
     ordering = [None] * len(g)
-    ordering[0] = v1, []
-    ordering[1] = v2, []
+    ordering[0] = v1
+    ordering[1] = v2
+    # wp_wq associates each vertex v[k] to its neighbors on G_{k-1}, i.e., if ordering[k] = vk, wp_wq[k]
+    # is the list of the neighbors of vk.
+    wp_wq = [[] for i in range(len(g))]
 
     for k in range(len(g), 2, -1):
 
@@ -49,24 +52,27 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
                 if chords[w] == 0:
                     available_vertices.add(w)
         else:
-            new_face_nodes = set(wpq[1:-1])
-            for i, w in enumerate(wpq):
-                if 0 < i < len(wpq) - 1:
-                    available_vertex = True
-                    out[w] = True
-                    neighbors = g.neighbors(w)
-                    for n in neighbors:
-                        if not mark[n] and out[n] and n != wpq[i - 1] and n != wpq[i + 1]:
-                            # (w, n) is a chord
-                            chords[w] += 1
-                            available_vertex = False
-                            if n not in new_face_nodes:
-                                chords[n] += 1
-                                available_vertices.discard(n)
-                    if available_vertex:
-                        available_vertices.add(w)
-        ordering[k-1] = x, wpq
-    return ordering
+            new_face_nodes_lst = wpq[1:-1]
+            new_face_nodes = set(new_face_nodes_lst)
+            for w in new_face_nodes_lst:
+                out[w] = True
+
+            for i, w in enumerate(new_face_nodes_lst):
+                available_vertex = True
+                neighbors = g.neighbors(w)
+                for n in neighbors:
+                    if not mark[n] and out[n] and n != wpq[i] and n != wpq[i + 2]:
+                        # (w, n) is a chord
+                        chords[w] += 1
+                        available_vertex = False
+                        if n not in new_face_nodes:
+                            chords[n] += 1
+                            available_vertices.discard(n)
+                if available_vertex:
+                    available_vertices.add(w)
+        ordering[k-1] = x
+        wp_wq[k-1] = wpq
+    return ordering, wp_wq
 
 
 def find_wpq(g: nx.PlanarEmbedding, v: int, out: list, mark: list, wq: int = None):

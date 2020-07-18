@@ -1,8 +1,18 @@
 from typing import Tuple, List
 
 
-def shift_algorithm(ordering: List[Tuple[int, list]]) -> Tuple[list, list]:
-    v1, v2, v3 = [c[0] for c in ordering[:3]]
+def shift_algorithm(ordering: List[int], wp_wq: List[List[int]]) -> Tuple[List[int], List[int]]:
+    """Map every node to a (x, y) position.
+
+    :param ordering: A canonical ordering of the vertices.
+    :param wp_wq: A list that associates each vertex vk to the list of its neighbors appearing in the clockwise order
+        on the external cycle of G_{k-1}.
+    :return:
+        A tuple (x_pos, y_pos) where x_pos is a list that maps vertices to their x-positions and y_pos a list that maps
+        vertices to their y-positions.
+    """
+    # Initialization
+    v1, v2, v3 = ordering[:3]
     left = ['N'] * len(ordering)
     right = ['N'] * len(ordering)
     offset = [None] * len(ordering)
@@ -21,53 +31,43 @@ def shift_algorithm(ordering: List[Tuple[int, list]]) -> Tuple[list, list]:
     right[v2] = None
     left[v2] = None
 
-    phase1(ordering, left, right, offset, y)
-    accumulate_offset(v1, 0, left, right, offset)
-    return offset, y
-
-
-def phase1(ordering: List[Tuple[int, list]], left: list, right: list, offset: list, y: list):
-    """
-
-    :param ordering:
-    :param left:
-    :param right:
-    :param offset:
-    :param y:
-    :return:
-    """
+    # Phase 1: Install v3 to vn one by one.
     for k in range(3, len(ordering)):
-        vk, neighbors_wi = ordering[k]
-        wp = neighbors_wi[0]
-        wq = neighbors_wi[-1]
-        offset[neighbors_wi[1]] += 1
+        vk = ordering[k]
+        neighbors_vk = wp_wq[k]
+        wp = neighbors_vk[0]
+        wq = neighbors_vk[-1]
+        offset[neighbors_vk[1]] += 1
         offset[wq] += 1
-        local_offset = sum([offset[i] for i in neighbors_wi[1:]])
+        local_offset = sum([offset[i] for i in neighbors_vk[1:]])
         offset[vk] = 0.5 * (local_offset - y[wp] + y[wq])
         y[vk] = 0.5 * (local_offset + y[wp] + y[wq])
         offset[wq] = local_offset - offset[vk]
 
-        if len(neighbors_wi) > 2:
-            offset[neighbors_wi[1]] -= offset[vk]
+        if len(neighbors_vk) > 2:
+            offset[neighbors_vk[1]] -= offset[vk]
         right[wp] = vk
         right[vk] = wq
 
-        if len(neighbors_wi) > 2:
-            left[vk] = neighbors_wi[1]
-            right[neighbors_wi[-2]] = None
+        if len(neighbors_vk) > 2:
+            left[vk] = neighbors_vk[1]
+            right[neighbors_vk[-2]] = None
         else:
             left[vk] = None
 
+    # Phase 2: Traverse the tree to compute the absolute x-positions.
+    accumulate_offset(v1, 0, left, right, offset)
+    return offset, y
+
 
 def accumulate_offset(v: int, delta: int, left: list, right: list, offset: list):
-    """Compute the absolute x-coordinates of the vertices through a traversal of the tree.
+    """Recursively compute the absolute x-coordinates of the vertices of the tree whose v is the root.
 
-    :param v:
-    :param left:
-    :param right:
-    :param offset:
+    :param v: The root of the given tree.
+    :param left: The list that associates each vertex to its left child.
+    :param right: The list that associates each vertex to its left child.
+    :param offset: The list of x_positions
     :param delta:
-    :return:
     """
     if v is not None:
         offset[v] += delta

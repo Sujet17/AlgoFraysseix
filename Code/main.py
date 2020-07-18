@@ -1,6 +1,7 @@
 from tkinter import *
 from graph import load_graph_list, embed_graph_list
 import networkx as nx
+# from networkx.algorithms.planar_drawing import get_canonical_ordering
 from canonical_ordering import get_canonical_ordering
 from shilft_algorithm import shift_algorithm
 from triangulation import triangulate_embedding
@@ -38,13 +39,15 @@ class App:
         embedding = self.graph_list[self.current_graph_index]
 
         embedding_t, external_face = triangulate_embedding(embedding)
-        ordering = get_canonical_ordering(embedding_t, external_face)
-        x_pos, y_pos = shift_algorithm(ordering)
-
-        # x_pos, y_pos = shift_algorithm.run()
-
-        self.grid.draw_graph(embedding, x_pos, y_pos)
-        # self.grid.draw_graph(embedding_t, x_pos, y_pos)
+        ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
+        x_pos, y_pos = shift_algorithm(ordering, wpq_list)
+        """
+        c_ordering = get_canonical_ordering(embedding_t, external_face)
+        ordering = [c[0] for c in c_ordering]
+        wpq_list = [c[1] for c in c_ordering]
+        x_pos, y_pos = shift_algorithm(ordering, wpq_list)
+        """
+        self.grid.draw_graph(embedding, embedding_t, x_pos, y_pos)
         self.window.update()
 
     def run(self):
@@ -118,35 +121,63 @@ class GridCanvas(Canvas):
         x_window, y_window = self.to_grid_coordinates(x, y)
         self.create_text(x_window, y_window, text=txt)
 
-    def draw_graph(self, g: nx.PlanarEmbedding, x_coord, y_coord):
+    def draw_graph(self, g: nx.PlanarEmbedding, g_triangulated: nx.PlanarEmbedding, x_coord: list, y_coord: list):
         self.delete("all")
         self.set_n(len(g))
         # self.display_borders()
         self.draw_grid()
         for i in range(len(g)):
             self.add_text(str(i+1), x_coord[i], y_coord[i])
-            for n in g.neighbors(i):
+            for n in g_triangulated.neighbors(i):
                 if n > i:
-                    # if g.is_dummy_edge(i, n):
-                    self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n], 'green')
-                    # else:
-                    #    self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n], 'red')
+                    if g.has_edge(i, n):
+                        self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n], 'black')
+                    else:
+                        self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n], 'green')
+
+
+def test_embedding_list(embedding_list):
+    for i, embedding in enumerate(embedding_list):
+        try:
+            embedding_t, external_face = triangulate_embedding(embedding)
+            ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
+            _, _ = shift_algorithm(ordering, wpq_list)
+        except ValueError:
+            print("VALUE ERROR")
+            for j in embedding.nodes:
+                print(j, ':', sorted([n for n in embedding.neighbors(j)]))
+            return False
+        except IndexError:
+            print("INDEX ERROR")
+            for j in embedding.nodes:
+                print(j, ':', sorted([n for n in embedding.neighbors(j)]))
+            return False
+    return True
+
+
+def test():
+    graphs = load_graph_list("list_2120_graphs.lst")
+    print(len(graphs))
+    embeddings = embed_graph_list(graphs)
+    print(len(embeddings))
+    print("LOADED AND EMBEDDED")
+    if test_embedding_list(embeddings):
+        print("OK")
+
+
+def test2():
+    graph_list = embed_graph_list(load_graph_list("graph_lst.lst"))
+    embedding = graph_list[1]
+    for v in embedding.nodes:
+        print(v, ":", list(embedding.neighbors_cw_order(v)))
+    print("-------")
+    embedding_t, external_face = triangulate_embedding(embedding)
+    ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
+    _, _ = shift_algorithm(ordering, wpq_list)
 
 
 if __name__ == "__main__":
-    app = App()
-    """
-    G = load_graph1()
-    dfs = DFS(G)
-    print(dfs.get_ordering())
-    """
-
-    """
-    print("-------")
-
-    for i in range(len(g)):
-        print(G.neighbors(i))
-
-    print("-------")
-    """
-    app.run()
+    test()
+    # test2()
+    # app = App()
+    # app.run()

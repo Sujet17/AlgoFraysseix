@@ -1,20 +1,20 @@
 import networkx as nx
-from typing import List, Tuple
+from typing import List
 
 
 def load_graph_list(file_path: str) -> List[nx.Graph]:
     graphs = []
     f = open(file_path, 'r')
     line = f.readline()
-    current_graph = []
+    current_graph_lst = []
     while line != '':
         if line != "\n":
-            current_graph.append(line[:-1])
+            current_graph_lst.append(line[:-1])
         else:
-            graphs.append(load_graph(current_graph))
-            current_graph = []
+            graphs.append(load_graph(current_graph_lst))
+            current_graph_lst = []
         line = f.readline()
-    graphs.append(load_graph(current_graph))
+    graphs.append(load_graph(current_graph_lst))
     f.close()
     return graphs
 
@@ -43,6 +43,6 @@ def embed_graph_list(graph_list: List[nx.Graph]) -> List[nx.PlanarEmbedding]:
     result = []
     for graph in graph_list:
         planar, embedding = nx.check_planarity(graph)
-        if planar:
+        if len(graph) > 2 and planar:
             result.append(embedding)
     return result
