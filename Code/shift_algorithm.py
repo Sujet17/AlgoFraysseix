@@ -1,4 +1,14 @@
+import networkx as nx
 from typing import Tuple, List
+from triangulation import triangulate_embedding
+from canonical_ordering import get_canonical_ordering
+
+
+def compute_pos(embedding: nx.PlanarEmbedding) -> tuple:
+    embedding_t, external_face = triangulate_embedding(embedding)
+    ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
+    x, y = shift_algorithm(ordering, wpq_list)
+    return x, y
 
 
 def shift_algorithm(ordering: List[int], wp_wq: List[List[int]]) -> Tuple[List[int], List[int]]:

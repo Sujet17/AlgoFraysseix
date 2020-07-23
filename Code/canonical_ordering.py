@@ -38,13 +38,13 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
 
     for k in range(len(g), 2, -1):
 
-        x = available_vertices.pop()
-        mark[x] = True
+        vk = available_vertices.pop()
+        mark[vk] = True
 
         if k == len(g):
-            wpq = find_wpq(g, x, out, mark, v2)
+            wpq = find_wpq(g, vk, out, mark, v2)
         else:
-            wpq = find_wpq(g, x, out, mark)
+            wpq = find_wpq(g, vk, out, mark)
 
         if len(wpq) == 2:
             for w in wpq:
@@ -70,7 +70,7 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
                             available_vertices.discard(n)
                 if available_vertex:
                     available_vertices.add(w)
-        ordering[k-1] = x
+        ordering[k-1] = vk
         wp_wq[k-1] = wpq
     return ordering, wp_wq
 

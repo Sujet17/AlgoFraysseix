@@ -1,10 +1,8 @@
-from tkinter import *
-from graph import load_graph_list, embed_graph_list
 import networkx as nx
-# from networkx.algorithms.planar_drawing import get_canonical_ordering
-from canonical_ordering import get_canonical_ordering
-from shilft_algorithm import shift_algorithm
+from tkinter import *
 from triangulation import triangulate_embedding
+from load_graph import *
+from shift_algorithm import compute_pos
 
 PAD = 10
 
@@ -38,15 +36,9 @@ class App:
             self.current_graph_index = 0
         embedding = self.graph_list[self.current_graph_index]
 
-        embedding_t, external_face = triangulate_embedding(embedding)
-        ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
-        x_pos, y_pos = shift_algorithm(ordering, wpq_list)
-        """
-        c_ordering = get_canonical_ordering(embedding_t, external_face)
-        ordering = [c[0] for c in c_ordering]
-        wpq_list = [c[1] for c in c_ordering]
-        x_pos, y_pos = shift_algorithm(ordering, wpq_list)
-        """
+        embedding_t, _ = triangulate_embedding(embedding)
+        x_pos, y_pos = compute_pos(embedding)
+
         self.grid.draw_graph(embedding, embedding_t, x_pos, y_pos)
         self.window.update()
 
@@ -139,9 +131,7 @@ class GridCanvas(Canvas):
 def test_embedding_list(embedding_list):
     for i, embedding in enumerate(embedding_list):
         try:
-            embedding_t, external_face = triangulate_embedding(embedding)
-            ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
-            _, _ = shift_algorithm(ordering, wpq_list)
+            compute_pos(embedding)
         except ValueError:
             print("VALUE ERROR")
             for j in embedding.nodes:
@@ -156,7 +146,7 @@ def test_embedding_list(embedding_list):
 
 
 def test():
-    graphs = load_graph_list("list_2120_graphs.lst")
+    graphs = load_graph_list("hog_planar_graphs.lst")
     print(len(graphs))
     embeddings = embed_graph_list(graphs)
     print(len(embeddings))
@@ -165,19 +155,10 @@ def test():
         print("OK")
 
 
-def test2():
-    graph_list = embed_graph_list(load_graph_list("graph_lst.lst"))
-    embedding = graph_list[1]
-    for v in embedding.nodes:
-        print(v, ":", list(embedding.neighbors_cw_order(v)))
-    print("-------")
-    embedding_t, external_face = triangulate_embedding(embedding)
-    ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
-    _, _ = shift_algorithm(ordering, wpq_list)
-
-
 if __name__ == "__main__":
-    test()
-    # test2()
-    # app = App()
-    # app.run()
+    # from time_measure import test_time
+    # embedding_lst = embed_graph_list(load_graph_list("hog_planar_graphs.lst"))
+    # test_time(embedding_lst)
+    # test()
+    app = App()
+    app.run()

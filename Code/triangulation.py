@@ -2,6 +2,13 @@ import networkx as nx
 from networkx.algorithms.planar_drawing import triangulate_embedding
 
 
+def not_implemented_yet(fct):
+    def new_fct():
+        raise RuntimeError("la fonction {0} est obsolète !".format(fct))
+    return new_fct()
+
+
+@not_implemented_yet
 def triangulate(embedding: nx.PlanarEmbedding):
     """Triangulates the embedding.
 
@@ -18,6 +25,7 @@ def triangulate(embedding: nx.PlanarEmbedding):
     remove_multiple_edges(embedding, sorted_edges)
 
 
+@not_implemented_yet
 def bucket_sort(g: nx.PlanarEmbedding) -> list:
     """
 
@@ -38,6 +46,7 @@ def bucket_sort(g: nx.PlanarEmbedding) -> list:
     return edge_list
 
 
+@not_implemented_yet
 def remove_multiple_edges(g: nx.PlanarEmbedding, sorted_edges: list):
     for i, edge in enumerate(sorted_edges):
         if edge == edge[i+1]:
