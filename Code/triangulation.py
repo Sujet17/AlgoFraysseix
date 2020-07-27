@@ -5,7 +5,7 @@ from networkx.algorithms.planar_drawing import triangulate_embedding
 def not_implemented_yet(fct):
     def new_fct():
         raise RuntimeError("la fonction {0} est obsolète !".format(fct))
-    return new_fct()
+    return new_fct
 
 
 @not_implemented_yet
