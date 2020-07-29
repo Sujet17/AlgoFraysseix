@@ -1,6 +1,6 @@
 import networkx as nx
 from typing import Tuple, List
-from triangulation import triangulate_embedding
+from networkx.algorithms.planar_drawing import triangulate_embedding
 from canonical_ordering import get_canonical_ordering
 
 

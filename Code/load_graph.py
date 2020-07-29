@@ -25,22 +25,6 @@ def load_graph_list(file_path: str) -> List[nx.Graph]:
     return graphs
 
 
-def load_graph_from_edges(file_path: str) -> nx.Graph:
-    """Read a file whose each line is an edge of the graph.
-
-    :param file_path:
-    :return:
-    """
-    graph = nx.Graph()
-    with open(file_path) as f:
-        line = f.readline()
-        while line != '':
-            u, v = line.split(' ')
-            graph.add_edge(int(u), int(v))
-            line = f.readline()
-    return graph
-
-
 def load_graph(adj_list: List[str]) -> nx.Graph:
     """Read a list of strings which is an adjacency list and return the corresponding graph.
 
@@ -62,11 +46,81 @@ def load_graph(adj_list: List[str]) -> nx.Graph:
     return g
 
 
+def save_graph_lst(graph_lst: List[nx.Graph], file_path: str):
+    """Write a list of graphs on a file.
+
+    Each graph is writen as a list of consecutive lines where each line gives the neighbors of a vertex v under the form
+    'v: a b c'. An empty line separates each graph from the others. The vertices of the graphs must be integers from 0
+    to n-1. If the file is not empty, the graph list will be append after the existing content of the file.
+
+    :param graph_lst: The list of graphs that will be saved.
+    :param file_path: The path of the file.
+    :return:
+    """
+    f = open(file_path, 'a')
+    for graph in graph_lst:
+        s = get_graph_as_str(graph)
+        f.write(s)
+        f.write('\n')
+    f.close()
+
+
+def get_graph_as_str(graph: nx.Graph) -> str:
+    """Transpose the graph into a string.
+
+    Each line of the string gives the neighbors of a vertex v under the form 'v: a b c'. The vertices of the graph must
+    be integers from 0 to n-1. The vertices in the string will be integers from 1 to n.
+
+    :param graph: A graph whose vertices must be integers from 0 to n-1.
+    :return: The graph writen as an string.
+    """
+    graph_as_str = ""
+    for i in range(len(graph)):
+        graph_as_str += str(i+1) + ':'
+        for n in graph.neighbors(i):
+            graph_as_str += ' ' + str(n+1)
+        graph_as_str += '\n'
+    return graph_as_str
+
+
+def convert_format(input_file_path: str, output_file_path: str):
+    """Read a graph in input_file and write it in an other format on output_file.
+
+    The input file format is one edge 'a b' per line, and the first line is ignored. In the output file each line gives
+    the neighbors of a vertex v under the form 'v: a b c', with a blank line at the end. If the output file is not
+    empty, the graph will be append after the existing content of the file.
+
+    :param input_file_path: The path of the input file.
+    :param output_file_path: The path of the output file.
+    :return:
+    """
+    graph = load_graph_from_edges(input_file_path)
+    save_graph_lst([graph], output_file_path)
+
+
+def load_graph_from_edges(file_path: str) -> nx.Graph:
+    """Read a file whose each line is an edge of the graph.
+
+    :param file_path:
+    :return:
+    """
+    graph = nx.Graph()
+    with open(file_path) as f:
+        line = f.readline()
+        while line != '':
+            u, v = line.split(' ')
+            graph.add_edge(int(u), int(v))
+            line = f.readline()
+    return graph
+
+
 def embed_graph_list(graph_list: List[nx.Graph]) -> List[nx.PlanarEmbedding]:
     """Return a list of the planar embeddings of the graphs of the given list.
+
     Non-planar graphs and graphs whose size is smaller than 3 are ignored.
-    :param graph_list:
-    :return:
+
+    :param graph_list: A list of graphs.
+    :return: The list of the planar embeddings.
     """
     result = []
     for graph in graph_list:
