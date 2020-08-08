@@ -1,35 +1,27 @@
 from tkinter import *
-
 import networkx as nx
-
-from load_graph import embed_graph_list, load_graph_list
-from shift_algorithm import compute_pos, triangulate_embedding
+from gui import App
 
 PAD = 10
 
 
-class AppTk:
+class AppTk(App):
     """
     Use tkinter to display graphs. The draws are less pretty than the ones generated with matplotlib (gui.py) but a lot
     faster.
     """
-    def __init__(self, file_paths):
+    def __init__(self, graph_list: nx.PlanarEmbedding):
+        App.__init__(self, graph_list)
+
         self.window = Tk()
-        # self.window.geometry("{0}x{1}+0+0".format(
-        #    self.window.winfo_screenwidth() - PAD, self.window.winfo_screenheight() - PAD))
         self.window.title("Planar graph drawing on a grid")
 
         self.grid = None
 
-        self.graph_list = []
-        for file_path in file_paths:
-            self.graph_list += embed_graph_list(load_graph_list(file_path))
-        # self.graph_list = [g for g in self.graph_list if len(g)>50]
-        self.current_graph_index = -1
-        self.current_graph = None
-
         self.button = Button(self.window, text="Set window full screen and then click me", command=self.init_canvas)
         self.button.pack()
+
+        self.window.mainloop()
 
     def init_canvas(self):
         self.window.update()
@@ -39,23 +31,19 @@ class AppTk:
         self.grid.pack()
         self.button.configure(text="Change graph", command=self.change_graph)
 
-    def change_graph(self):
-        self.current_graph_index -= 1
-        if self.current_graph_index >= len(self.graph_list):
-            self.current_graph_index -= len(self.graph_list)
-        elif self.current_graph_index < 0:
-            self.current_graph_index += len(self.graph_list)
-        self.current_graph = self.graph_list[self.current_graph_index]
-        embedding = self.graph_list[self.current_graph_index]
-
-        embedding_t, _ = triangulate_embedding(embedding)
-        x_pos, y_pos = compute_pos(embedding)
-
-        self.grid.draw_graph(embedding, embedding_t, x_pos, y_pos)
+    def update_display(self):
+        self.grid.delete("all")
+        self.grid.set_n(len(self.current_graph))
+        if len(self.current_graph) < 25:
+            self.grid.draw_grid()
+        self.draw_graph()
         self.window.update()
 
-    def run(self):
-        self.window.mainloop()
+    def draw_edge(self, u, v, color):
+        self.grid.draw_edge(self.x_pos[u], self.y_pos[u], self.x_pos[v], self.y_pos[v], color)
+
+    def add_text(self, v):
+        self.grid.add_text(str(v+1), self.x_pos[v], self.y_pos[v])
 
 
 class GridCanvas(Canvas):
@@ -73,8 +61,6 @@ class GridCanvas(Canvas):
                         width=container_width,
                         height=container_height)
         self.create_line(100, 0, 100, container_height)
-        # def update_container_size(self, container_width, container_height):
-        #     self.master_width = container_width
 
     def set_n(self, n):
         self.n = n
@@ -94,15 +80,6 @@ class GridCanvas(Canvas):
             self.pad_x = PAD
             self.pad_y = (self.container_height - ((self.n-2)*self.cell_size))/2
 
-    def display_borders(self):
-        h = self.pad_y + self.height * self.cell_size
-        w = self.pad_x + self.width * self.cell_size
-
-        self.create_line(1, 1, 1, h, fill='red')
-        self.create_line(1, 1, w, 1, fill='green')
-        self.create_line(1, h, w, h, fill='blue')
-        self.create_line(w, h, w, 1, fill='yellow')
-
     def draw_grid(self):
         for i in range(self.width):
             for j in range(self.height):
@@ -110,7 +87,6 @@ class GridCanvas(Canvas):
 
     def draw_point(self, x, y):
         x_window, y_window = self.to_grid_coordinates(x, y)
-        # self.create_oval(x_window, y_window, x_window, y_window, width=0, fill='red')
         self.create_line(x_window, y_window, x_window + 1, y_window)
 
     def draw_edge(self, x1, y1, x2, y2, color):
@@ -124,17 +100,3 @@ class GridCanvas(Canvas):
     def add_text(self, txt, x, y):
         x_window, y_window = self.to_grid_coordinates(x, y)
         self.create_text(x_window, y_window, text=txt)
-
-    def draw_graph(self, g: nx.PlanarEmbedding, g_triangulated: nx.PlanarEmbedding, x_coord: list, y_coord: list):
-        self.delete("all")
-        self.set_n(len(g))
-        # self.display_borders()
-        self.draw_grid()
-        for i in range(len(g)):
-            self.add_text(str(i+1), x_coord[i], y_coord[i])
-            for n in g_triangulated.neighbors(i):
-                if n > i:
-                    if g.has_edge(i, n):
-                        self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n], 'black')
-                    else:
-                        self.draw_edge(x_coord[i], y_coord[i], x_coord[n], y_coord[n], 'green')

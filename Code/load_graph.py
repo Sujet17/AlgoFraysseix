@@ -61,7 +61,6 @@ def save_graph_lst(graph_lst: List[nx.Graph], file_path: str):
     for graph in graph_lst:
         s = get_graph_as_str(graph)
         f.write(s)
-        f.write('\n')
     f.close()
 
 
@@ -109,7 +108,7 @@ def load_graph_from_edges(file_path: str) -> nx.Graph:
         line = f.readline()
         while line != '':
             u, v = line.split(' ')
-            graph.add_edge(int(u), int(v))
+            graph.add_edge(int(u)-1, int(v)-1)
             line = f.readline()
     return graph
 
@@ -128,3 +127,13 @@ def embed_graph_list(graph_list: List[nx.Graph]) -> List[nx.PlanarEmbedding]:
         if len(graph) > 2 and planar:
             result.append(embedding)
     return result
+
+
+def get_embeddings_from_files(file_names: List[str], min_size=None, max_size=None) -> List[nx.PlanarEmbedding]:
+    graph_list = []
+    for file in file_names:
+        g_lst = embed_graph_list(load_graph_list(file))
+        for g in g_lst:
+            if (min_size is None or len(g) > max(2, min_size)) and (max_size is None or len(g) < max_size):
+                graph_list.append(g)
+    return graph_list

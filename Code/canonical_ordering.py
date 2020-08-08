@@ -42,7 +42,7 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
         mark[vk] = True
 
         if k == len(g):
-            wpq = find_wpq(g, vk, out, mark, v2)
+            wpq = find_wpq(g, vk, out, mark, v1)
         else:
             wpq = find_wpq(g, vk, out, mark)
 
@@ -75,23 +75,22 @@ def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[
     return ordering, wp_wq
 
 
-def find_wpq(g: nx.PlanarEmbedding, v: int, out: list, mark: list, wq: int = None):
+def find_wpq(g: nx.PlanarEmbedding, v: int, out: list, mark: list, wp: int = None):
     """
     Find the list of the neighbors of x that are not marked yet. They appear consecutively on the external cycle.
 
     Among the neighbors of x, only two vertices are marked 'out' : they are wp and wq. So this method finds wp and wq
-    and returns a list of the not marked neighbors with either wp or wq at the first position and the other at the last
-    position.
+    and returns a list of the not marked neighbors with either wp at the first position and wq at the last position.
 
     :param g: The graph
     :param v: The vertex that is added in the order
     :param out: The list that stores which vertex are 'out'
     :param mark: The list that stores which vertices are marked
-    :param wq: For the first vertex, we know that wq is v2. For the other vertices, wq is not specified
+    :param wp: For the first vertex, we know that wp is v1. For the other vertices, wp is not specified
     :return: A list of the non-marked neighbors of x, in the counterclockwise order looking from x
     """
     wpq = []
-    neighbors = list(g.neighbors_cw_order(v))
+    neighbors = list(neighbors_ccw_order(g, v))
     # x has exactly two neighbors that are 'out'. There are wp and wq, i.e., the first and last vertices of wpq
     # out_wpq_indices stores the indices of the two out vertices in wpq
     # out_neighbors_indices stores the indices of the two out vertices in the neighbors list
@@ -105,17 +104,35 @@ def find_wpq(g: nx.PlanarEmbedding, v: int, out: list, mark: list, wq: int = Non
                 out_wpq_indices.append(len(wpq) - 1)
                 out_neighbors_indices.append(i)
 
-    wq_index = out_wpq_indices[1]
-    if wq is not None:
+    wp_index = out_wpq_indices[1]
+    if wp is not None:
         # If wq is specified in the arguments.
-        if wq == neighbors[out_neighbors_indices[0]]:
-            wq_index = out_wpq_indices[0]
+        if wp == neighbors[out_neighbors_indices[0]]:
+            wp_index = out_wpq_indices[0]
     else:
         # Except for the first vertex, there is always a neighbor of v that is marked. So, as the first vertex case is
         # managed, we can identify wq as the out_vertex that is preceded by a marked vertex in the list of neighbors.
         if mark[neighbors[out_neighbors_indices[0]-1]]:
-            wq_index = out_wpq_indices[0]
+            wp_index = out_wpq_indices[0]
 
-    wpq = wpq[wq_index:] + wpq[:wq_index]
-    wpq.reverse()
+    wpq = wpq[wp_index:] + wpq[:wp_index]
+    # wpq.reverse()
     return wpq
+
+
+def neighbors_ccw_order(embedding: nx.PlanarEmbedding, v: int):
+    """Generator for the neighbors of v in counter-clockwise order.
+
+    :param embedding:
+    :param v:
+    :return:
+    """
+    if len(embedding[v]) == 0:
+        # v has no neighbors
+        return
+    start_node = embedding.nodes[v]['first_nbr']
+    yield start_node
+    current_node = embedding[v][start_node]['ccw']
+    while start_node != current_node:
+        yield current_node
+        current_node = embedding[v][current_node]['ccw']
