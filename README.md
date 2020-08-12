@@ -4,6 +4,8 @@ Implémentation Python d'un algorithme de dessin de graphe planaire proposé par
 
 ---
 
+[1] Hubert de Fraysseix, János Pach, and Richard Pollack. How to draw a planar graph on a grid. *Combinatorica*, 10(1) :41–51, 1990.
+
 ## Guide d'utilisation
 
 ### Librairies nécessaires
@@ -29,16 +31,6 @@ Les différentes arguments sont les suivants:
   - -M MAX, --max MAX : spécifie la taille maximale des graphes traités. Les graphes trop grands sont ignorés.
   - -t, --tk : les graphes seront dessinés directement sur un canvas *tkinter* plutôt que dans une fenêtre matplotlib. Les dessins produits sont moins jolis et il n'est pas possible de ne pas afficher les "dummy edges", l'intention était de n'utiliser que matplotlib. Mais cette solution s'avérant beaucoup plus rapide, il est possible de l'utiliser via cette option.
 
-optional arguments:
-  -h, --help         show this help message and exit
-  -m MIN, --min MIN  Specify the minimum size of the graphs treated. The too
-                     little graphs are ignored.
-  -M MAX, --max MAX  Specify the maximum size of the graphs treated. The too
-                     big graphs are ignored.
-  -t, --tk           Execute a tkinter window that displays the straight line
-                     drawing of the specified graphs.The drawing is less
-                     pretty than with matplotlib but faster.
-
 Voici un exemple d'affichage de graphe:
 ![exMain](./pictures/exMain.png)
 
@@ -62,11 +54,4 @@ Les différentes arguments sont les suivants:
 
 Voici un exemple de graphique obtenu:
 ![exPlot](./pictures/exPlot.png)
-
-
-
----
-
-[1] Hubert de Fraysseix, János Pach, and Richard Pollack. How to draw a planar graph on a grid. *Combinatorica*, 10(1) :41–51, 1990.
-
 
