@@ -1,3 +1,5 @@
+import networkx as nx
+
 from gui import AppMatplotlib
 from gui_tkinter import AppTk
 import argparse
@@ -17,6 +19,16 @@ class MyParser(argparse.ArgumentParser):
         self.add_argument('files', type=str, nargs='+',
                           help='The list of files that contains the graphs that will be treated. These files must be '
                                'located in the graph_examples directory.')
+
+
+def test2():
+    lst = []
+    for i in range(3, 50):
+        g = nx.Graph()
+        g.add_nodes_from(range(i))
+        _, embedding = nx.check_planarity(g)
+        lst.append(embedding)
+    AppMatplotlib(lst)
 
 
 if __name__ == "__main__":

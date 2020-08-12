@@ -61,6 +61,7 @@ def save_graph_lst(graph_lst: List[nx.Graph], file_path: str):
     for graph in graph_lst:
         s = get_graph_as_str(graph)
         f.write(s)
+        f.write('\n')
     f.close()
 
 

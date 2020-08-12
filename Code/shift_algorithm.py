@@ -4,7 +4,14 @@ from networkx.algorithms.planar_drawing import triangulate_embedding
 from canonical_ordering import get_canonical_ordering
 
 
-def compute_pos(embedding: nx.PlanarEmbedding) -> tuple:
+def compute_pos(embedding: nx.PlanarEmbedding) -> Tuple[List[int], List[int]]:
+    """Triangulates the graph, computes a canonical ordering and use it to compute a planar drawing on a grid.
+
+    :param embedding: The planar embedding of the graph.
+    :return:
+        A tuple (x_pos, y_pos) where x_pos is a list that maps vertices to their x-positions and y_pos a list that maps
+        vertices to their y-positions.
+    """
     embedding_t, external_face = triangulate_embedding(embedding)
     ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
     x, y = shift_algorithm(ordering, wpq_list)
@@ -77,7 +84,7 @@ def accumulate_offset(v: int, delta: int, left: list, right: list, offset: list)
     :param left: The list that associates each vertex to its left child.
     :param right: The list that associates each vertex to its left child.
     :param offset: The list of x_positions
-    :param delta:
+    :param delta: The absolute x-coordinate of the father of v in T
     """
     if v is not None:
         offset[v] += delta

@@ -128,7 +128,6 @@ def neighbors_ccw_order(embedding: nx.PlanarEmbedding, v: int):
     :return:
     """
     if len(embedding[v]) == 0:
-        # v has no neighbors
         return
     start_node = embedding.nodes[v]['first_nbr']
     yield start_node
