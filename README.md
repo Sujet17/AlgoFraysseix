@@ -34,7 +34,9 @@ Les différentes arguments sont les suivants:
   - -M MAX, --max MAX : spécifie la taille maximale des graphes traités. Les graphes trop grands sont ignorés.
   - -t, --tk : si spécifié, les graphes seront dessinés directement sur un canvas *tkinter* plutôt que dans une fenêtre matplotlib. Les dessins produits sont moins jolis et il n'est pas possible de ne pas afficher les "dummy edges", l'intention était de n'utiliser que matplotlib. Mais cette solution s'avérant beaucoup plus rapide, il est possible de l'utiliser via cette option.
 
-Voici un exemple d'affichage de graphe, obtenu en lançant la commande ``` python main.py graph_examples/test.lst``` :
+Voici un exemple d'affichage de graphe, obtenu en lançant la commande 
+
+``` python main.py graph_examples/test.lst``` :
 
 ![exMain](./pictures/exMain.png)
 
@@ -60,7 +62,7 @@ Les différentes arguments sont les suivants:
 
 Voici un exemple de graphique obtenu en lançant la commande 
 
-``` python measure_time.py -rt graph_examples/test.lst graph_examples/hog.lst``` 
+``` python measure_time.py -rt graph_examples/generated.lst graph_examples/hog_planar_graphs.lst``` 
 
 ![exPlot](./pictures/exPlot.png)
 
