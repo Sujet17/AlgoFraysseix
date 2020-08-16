@@ -16,6 +16,9 @@ def add_text(txt, x, y):
 
 
 class App:
+    """
+    An 'abstract' class for the GUI.
+    """
     def __init__(self, graph_list: List[nx.PlanarEmbedding]):
         self.graph_list = graph_list
         self.current_graph_index = -1
@@ -66,6 +69,9 @@ class App:
 
 
 class AppMatplotlib(App):
+    """
+    A class that uses matplotlib to display the drawing of a graph.
+    """
     def __init__(self, graph_list: List[nx.PlanarEmbedding]):
         App.__init__(self, graph_list)
 

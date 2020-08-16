@@ -4,15 +4,19 @@ from networkx.algorithms.planar_drawing import triangulate_embedding
 from canonical_ordering import get_canonical_ordering
 
 
-def compute_pos(embedding: nx.PlanarEmbedding) -> Tuple[List[int], List[int]]:
+def compute_pos(embedding: nx.PlanarEmbedding, external_face: tuple = None) -> Tuple[List[int], List[int]]:
     """Triangulates the graph, computes a canonical ordering and use it to compute a planar drawing on a grid.
 
     :param embedding: The planar embedding of the graph.
+    :param external_face: If this parameter is specified, the graph is considered as already triangulated.
     :return:
         A tuple (x_pos, y_pos) where x_pos is a list that maps vertices to their x-positions and y_pos a list that maps
         vertices to their y-positions.
     """
-    embedding_t, external_face = triangulate_embedding(embedding)
+    if external_face is None:
+        embedding_t, external_face = triangulate_embedding(embedding)
+    else:
+        embedding_t = embedding
     ordering, wpq_list = get_canonical_ordering(embedding_t, external_face)
     x, y = shift_algorithm(ordering, wpq_list)
     return x, y
@@ -56,17 +60,17 @@ def shift_algorithm(ordering: List[int], wp_wq: List[List[int]]) -> Tuple[List[i
         wq = neighbors_vk[-1]
         offset[neighbors_vk[1]] += 1
         offset[wq] += 1
+
         local_offset = sum([offset[i] for i in neighbors_vk[1:]])
         offset[vk] = 0.5 * (local_offset - y[wp] + y[wq])
         y[vk] = 0.5 * (local_offset + y[wp] + y[wq])
         offset[wq] = local_offset - offset[vk]
 
-        if len(neighbors_vk) > 2:
-            offset[neighbors_vk[1]] -= offset[vk]
         right[wp] = vk
         right[vk] = wq
 
         if len(neighbors_vk) > 2:
+            offset[neighbors_vk[1]] -= offset[vk]
             left[vk] = neighbors_vk[1]
             right[neighbors_vk[-2]] = None
         else:

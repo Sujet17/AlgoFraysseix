@@ -1,10 +1,7 @@
-import networkx as nx
-
 from gui import AppMatplotlib
 from gui_tkinter import AppTk
+from load_graph import load_embedding_lst
 import argparse
-
-from load_graph import get_embeddings_from_files
 
 
 class MyParser(argparse.ArgumentParser):
@@ -17,18 +14,7 @@ class MyParser(argparse.ArgumentParser):
                           help='Specify the maximum size of the graphs treated. The too big graphs are ignored.')
 
         self.add_argument('files', type=str, nargs='+',
-                          help='The list of files that contains the graphs that will be treated. These files must be '
-                               'located in the graph_examples directory.')
-
-
-def test2():
-    lst = []
-    for i in range(3, 50):
-        g = nx.Graph()
-        g.add_nodes_from(range(i))
-        _, embedding = nx.check_planarity(g)
-        lst.append(embedding)
-    AppMatplotlib(lst)
+                          help='The list of files that contains the graphs that will be treated.')
 
 
 if __name__ == "__main__":
@@ -39,8 +25,7 @@ if __name__ == "__main__":
                              'The drawing is less pretty than with matplotlib but faster.')
 
     args = parser.parse_args()
-    files = ['graph_examples/' + filename for filename in args.files]
-    graph_list = get_embeddings_from_files(files, args.min, args.max)
+    graph_list = load_embedding_lst(args.files, args.min, args.max)
     if len(graph_list) == 0:
         print("There is no graph to display")
     elif args.tk:

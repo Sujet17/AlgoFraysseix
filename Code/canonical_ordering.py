@@ -2,13 +2,14 @@ import networkx as nx
 from typing import List, Tuple
 
 
-def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> List[Tuple[int, list]]:
+def get_canonical_ordering(g: nx.PlanarEmbedding, external_face: tuple) -> Tuple[List[int], List[List[int]]]:
     """Returns a canonical ordering of the nodes of the graph.
 
     :param g: A triangulated graph coming with a planar embedding.
     :param external_face: A tuple (v1, v2, v3) where v1, v2 and v3 are the vertices
         appearing on the outer boundary of the graph in the counterclockwise order.
-    :return: An ordering on the vertices that is canonical.
+    :return: An ordering on the vertices that is canonical and a list that associates to each vertex vk its neighbors on
+        the external cycle of G_{k-1}.
     """
     v1, v2, vn = external_face
     # For each vertex v:
@@ -116,7 +117,6 @@ def find_wpq(g: nx.PlanarEmbedding, v: int, out: list, mark: list, wp: int = Non
             wp_index = out_wpq_indices[0]
 
     wpq = wpq[wp_index:] + wpq[:wp_index]
-    # wpq.reverse()
     return wpq
 
 
